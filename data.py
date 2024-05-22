@@ -35,7 +35,12 @@ class DataSeries:
 
     def __getitem__(self, key):
         if isinstance(key, slice):
-            return [self[i] for i in key.indices(len(self))]
+            return DataSeries(
+                time=self.time[key],
+                price=self.price[key],
+                market_cap=self.market_cap[key],
+                total_volume=self.total_volume[key]
+            )
         elif isinstance(key, int):
             return Entry(
                 time=self.time[key],
@@ -43,6 +48,14 @@ class DataSeries:
                 market_cap=self.market_cap[key],
                 total_volume=self.total_volume[key]
             )
+
+    def __repr__(self):
+        return pd.DataFrame({
+            'time': self.time,
+            'price': self.price,
+            'market_cap': self.market_cap,
+            'total_volume': self.total_volume
+        }).__repr__()
 
 
 data = DataSeries.from_csv('resources/eth-usd-max.csv')
@@ -52,4 +65,4 @@ print('first value:')
 print(data[0])
 
 print('first values:')
-print("\n".join(map(str, data[0:5])))
+print(data[0:5])
