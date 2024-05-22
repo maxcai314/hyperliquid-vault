@@ -1,16 +1,55 @@
-# This is a sample Python script.
+import pandas as pd
+from dataclasses import dataclass
 
-# Press ⌃R to execute it or replace it with your code.
-# Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
+@dataclass
+class Entry:
+    time: pd.Timestamp
+    price: float
+    market_cap: float
+    total_volume: float
+
+    def __repr__(self):
+        return f'{self.time} - {self.price} - {self.market_cap} - {self.total_volume}'
+
+@dataclass
+class DataSeries:
+    time: pd.DataFrame
+    price: pd.DataFrame
+    market_cap: pd.DataFrame
+    total_volume: pd.DataFrame
+
+    @staticmethod
+    def from_csv(file_path: str):
+        df = pd.read_csv(file_path)
+        df['snapped_at'] = pd.to_datetime(df['snapped_at'])
+
+        return DataSeries(
+            time=df['snapped_at'],
+            price=df['price'],
+            market_cap=df['market_cap'],
+            total_volume=df['total_volume']
+        )
+
+    def __len__(self):
+        return len(self.time)
+
+    def __getitem__(self, key):
+        if isinstance(key, slice):
+            return [self[i] for i in key.indices(len(self))]
+        elif isinstance(key, int):
+            return Entry(
+                time=self.time[key],
+                price=self.price[key],
+                market_cap=self.market_cap[key],
+                total_volume=self.total_volume[key]
+            )
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press ⌘F8 to toggle the breakpoint.
+data = DataSeries.from_csv('resources/eth-usd-max.csv')
+print(data)
 
+print('first value:')
+print(data[0])
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+print('first values:')
+print("\n".join(map(str, data[0:5])))
