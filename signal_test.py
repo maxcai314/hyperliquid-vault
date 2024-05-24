@@ -1,36 +1,35 @@
-import matplotlib.pyplot as plt
-
 from data import *
 from signal import *
 import numpy as np
 import matplotlib.pyplot as plt
 
-data = DataSeries.from_csv('resources/eth-usd-max.csv')[1000:] # ignore first few years
+data = DataSeries.from_csv('resources/eth-usd-max.csv')[1000:]  # ignore first few years
 
 
-def test_accuracy(predictor, name='Investment Strategy') -> float:
+def test_accuracy(predictor, name='Investment Strategy', plot_price=True, plot_normalized=False) -> float:
     num_correct = 0
     num_true = 0
 
-    t = np.arange(len(data))
+    eth_prices = np.array([entry.price for entry in data])
+    t = np.arange(len(data), dtype=int)
     portfolio = np.zeros_like(t, dtype=float)
     portfolio[0:7] = data[0].price  # first week doesn't count
 
     leverage = 1
 
-    for idx in range(7, len(data)-1):
-        i = int(t[idx])
+    for i in range(7, len(data)-1):
         history = data[i-7:i+1]
-        yesterday = history[-2].price
-        today = history[-1].price
         prediction = predictor.predict_price(history)
 
-        price_change = today - yesterday
-        yesterday_portfolio = portfolio[idx - 1]
-        num_eth = yesterday_portfolio / yesterday
-        portfolio[idx] = yesterday_portfolio + (num_eth * price_change * leverage)
+        yesterday = eth_prices[i - 1]
+        today = eth_prices[i]
 
-        tomorrow = data[i + 1].price
+        price_change = today - yesterday
+        yesterday_portfolio = portfolio[i - 1]
+        num_eth = yesterday_portfolio / yesterday
+        portfolio[i] = yesterday_portfolio + (num_eth * price_change * leverage)
+
+        tomorrow = eth_prices[i + 1]
         actual_result = tomorrow > today
 
         if prediction:
@@ -44,14 +43,25 @@ def test_accuracy(predictor, name='Investment Strategy') -> float:
         if actual_result == prediction:
             num_correct += 1
 
-    plt.figure()
-    plt.title(name)
-    plt.xlabel('Days Passed')
-    plt.ylabel('Value ($)')
-    plt.plot(t, np.array([entry.price for entry in data]), label='Eth Price')
-    plt.plot(t[7:len(data)-1], portfolio[7:len(data)-1], label='Portfolio Value')
-    plt.legend()
-    plt.show()
+    if plot_price:
+        plt.figure()
+        plt.title(name)
+        plt.xlabel('Days Passed')
+        plt.ylabel('Value ($)')
+        plt.plot(t, eth_prices, label='Eth Price')
+        plt.plot(t[7:len(data) - 1], portfolio[7:len(data) - 1], label='Portfolio Value')
+        plt.legend()
+        plt.show()
+
+    if plot_normalized:
+        plt.figure()
+        plt.title(name)
+        plt.xlabel('Days Passed')
+        plt.ylabel('Value (ETH)')
+        plt.plot(t, eth_prices/eth_prices, label='Eth Price')
+        plt.plot(t[7:len(data)-1], (portfolio / eth_prices)[7:len(data)-1], label='Portfolio Value')
+        plt.legend()
+        plt.show()
 
     print(name)
     print(f'Bullish ratio: {num_true / (len(data) - 8)}')
