@@ -55,6 +55,14 @@ class DataSeries:
                 total_volume=self.total_volume[index]
             )
 
+    def __iter__(self):
+        return iter([Entry(
+            time=self.time[i],
+            price=self.price[i],
+            market_cap=self.market_cap[i],
+            total_volume=self.total_volume[i]
+        ) for i in range(len(self))])
+
     def __repr__(self):
         return pd.DataFrame({
             'time': self.time,
