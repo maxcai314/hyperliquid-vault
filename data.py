@@ -35,18 +35,24 @@ class DataSeries:
 
     def __getitem__(self, key):
         if isinstance(key, slice):
+            time = self.time[key].reset_index(drop=True)
+            price = self.price[key].reset_index(drop=True)
+            market_cap = self.market_cap[key].reset_index(drop=True)
+            total_volume = self.total_volume[key].reset_index(drop=True)
+
             return DataSeries(
-                time=self.time[key],
-                price=self.price[key],
-                market_cap=self.market_cap[key],
-                total_volume=self.total_volume[key]
+                time=time,
+                price=price,
+                market_cap=market_cap,
+                total_volume=total_volume
             )
         elif isinstance(key, int):
+            index = key % len(self)
             return Entry(
-                time=self.time[key],
-                price=self.price[key],
-                market_cap=self.market_cap[key],
-                total_volume=self.total_volume[key]
+                time=self.time[index],
+                price=self.price[index],
+                market_cap=self.market_cap[index],
+                total_volume=self.total_volume[index]
             )
 
     def __repr__(self):
@@ -65,5 +71,8 @@ if __name__ == '__main__':
     print('first value:')
     print(data[0])
 
+    print('last value:')
+    print(data[-1])
+
     print('first values:')
-    print(data[0:5])
+    print(data[5:10])
