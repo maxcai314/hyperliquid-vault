@@ -58,11 +58,12 @@ class DataSeries:
         }).__repr__()
 
 
-data = DataSeries.from_csv('resources/eth-usd-max.csv')
-print(data)
+if __name__ == '__main__':
+    data = DataSeries.from_csv('resources/eth-usd-max.csv')
+    print(data)
 
-print('first value:')
-print(data[0])
+    print('first value:')
+    print(data[0])
 
-print('first values:')
-print(data[0:5])
+    print('first values:')
+    print(data[0:5])
