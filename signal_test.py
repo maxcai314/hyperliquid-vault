@@ -1,12 +1,11 @@
 from data import *
-from signal import *
 import numpy as np
 import matplotlib.pyplot as plt
 
 data = DataSeries.from_csv('resources/eth-usd-max.csv')[1000:]  # ignore first few years
 
 
-def test_accuracy(predictor, name='Investment Strategy', plot_price=True, plot_normalized=False) -> float:
+def test_signal(predictor, name='Investment Strategy', plot_price=True, plot_normalized=False) -> float:
     num_correct = 0
     num_true = 0
 
@@ -62,23 +61,24 @@ def test_accuracy(predictor, name='Investment Strategy', plot_price=True, plot_n
         plt.plot(t[7:len(data)-1], (portfolio / eth_prices)[7:len(data)-1], label='Portfolio Value')
         plt.legend()
         plt.show()
-
-    print(name)
-    print(f'Bullish ratio: {num_true / (len(data) - 8)}')
-    print(f'Accuracy: {num_correct / (len(data) - 8)}')
-    print()
-
-    return num_correct / (len(data) - 8)
+    #
+    # print(name)
+    # print(f'Bullish ratio: {num_true / (len(data) - 8)}')
+    # print(f'Accuracy: {num_correct / (len(data) - 8)}')
+    # print()
 
 
-test_accuracy(ALWAYS_BULLISH, name='Always Bullish')
-test_accuracy(ALWAYS_BEARISH, name='Always Bearish')
+if __name__ == '__main__':
+    from signals import *
 
-test_accuracy(YESTERDAYS_NEWS, name='Yesterday\'s News')
-test_accuracy(PointSignal(time_step=2), name='Two Days Ago')
+    test_signal(ALWAYS_BULLISH, name='Always Bullish')
+    test_signal(ALWAYS_BEARISH, name='Always Bearish')
 
-test_accuracy(LinearSignal(days_to_consider=7), name='Linear Trend (7)')
-test_accuracy(QuadraticSignal(days_to_consider=7), name='Quadratic Trend (7)')
+    test_signal(YESTERDAYS_NEWS, name='Yesterday\'s News')
+    test_signal(PointSignal(time_step=2), name='Two Days Ago')
 
-test_accuracy(LinearSignal(days_to_consider=4), name='Linear Trend (4)')
-test_accuracy(QuadraticSignal(days_to_consider=4), name='Quadratic Trend (4)')
+    test_signal(LinearSignal(days_to_consider=7), name='Linear Trend (7)')
+    test_signal(QuadraticSignal(days_to_consider=7), name='Quadratic Trend (7)')
+
+    test_signal(LinearSignal(days_to_consider=4), name='Linear Trend (4)')
+    test_signal(QuadraticSignal(days_to_consider=4), name='Quadratic Trend (4)')
