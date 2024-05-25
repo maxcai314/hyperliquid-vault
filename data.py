@@ -35,6 +35,11 @@ class DataSeries:
 
     def __getitem__(self, key):
         if isinstance(key, slice):
+            # wrap negative numbers using modulo
+            start = key.start % len(self) if key.start is not None else None
+            stop = key.stop % len(self) if key.stop is not None else None
+            key = slice(start, stop, key.step)
+
             time = self.time[key].reset_index(drop=True)
             price = self.price[key].reset_index(drop=True)
             market_cap = self.market_cap[key].reset_index(drop=True)
