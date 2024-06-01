@@ -2,7 +2,7 @@ from data import *
 import numpy as np
 import matplotlib.pyplot as plt
 
-data = DataSeries.from_csv('resources/eth-usd-hourly.csv')
+data = DataSeries.from_csv('resources/eth-usd-hourly.csv')[-365 * 24:]  # only use data from the past year
 
 HISTORY_LENGTH = 24
 
@@ -65,7 +65,7 @@ def test_signal(predictor, name='Investment Strategy', plot_price=True, plot_nor
             plt.axvspan(start, end, color='g', alpha=0.2)
         for start, end in zip(decrease_leverage, increase_leverage[1:]):
             plt.axvspan(start, end, color='r', alpha=0.2)
-        plt.legend()
+        plt.legend(loc='upper left')
         plt.show()
 
     if plot_normalized:
@@ -79,7 +79,7 @@ def test_signal(predictor, name='Investment Strategy', plot_price=True, plot_nor
             plt.axvspan(start, end, color='g', alpha=0.2)
         for start, end in zip(decrease_leverage, increase_leverage[1:]):
             plt.axvspan(start, end, color='r', alpha=0.2)
-        plt.legend()
+        plt.legend(loc='upper left')
         plt.show()
 
     print(name)

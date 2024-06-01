@@ -31,6 +31,17 @@ class DataSeries:
         return self.close
 
     @staticmethod
+    def empty():
+        return DataSeries(
+            time=pd.Series(dtype='datetime64[ns]'),
+            high=pd.Series(dtype='float'),
+            low=pd.Series(dtype='float'),
+            open=pd.Series(dtype='float'),
+            close=pd.Series(dtype='float'),
+            volume=pd.Series(dtype='float')
+        )
+
+    @staticmethod
     def from_df(df: pd.DataFrame):
         return DataSeries(
             time=df['time'],
@@ -60,6 +71,9 @@ class DataSeries:
 
     def to_csv(self, file_path: str):
         self.to_df().to_csv(file_path, index=False)
+
+    def concat(self, new_data):
+        return DataSeries.from_df(pd.concat([self.to_df(), new_data.to_df()], ignore_index=True))
 
     def __len__(self):
         return len(self.time)
