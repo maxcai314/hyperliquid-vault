@@ -4,31 +4,62 @@ from dataclasses import dataclass
 @dataclass
 class Entry:
     time: pd.Timestamp
-    price: float
-    market_cap: float
-    total_volume: float
+    high: float
+    low: float
+    open: float
+    close: float
+    volume: float
 
     def __repr__(self):
-        return f'{self.time} - {self.price} - {self.market_cap} - {self.total_volume}'
+        return f'{self.time}: {self.close}'
+
+    @property
+    def price(self):
+        return self.close
 
 @dataclass
 class DataSeries:
-    time: pd.DataFrame
-    price: pd.DataFrame
-    market_cap: pd.DataFrame
-    total_volume: pd.DataFrame
+    time: pd.Series
+    high: pd.Series
+    low: pd.Series
+    open: pd.Series
+    close: pd.Series
+    volume: pd.Series
+
+    @property
+    def price(self):
+        return self.close
+
+    @staticmethod
+    def from_df(df: pd.DataFrame):
+        return DataSeries(
+            time=df['time'],
+            high=df['high'],
+            low=df['low'],
+            open=df['open'],
+            close=df['close'],
+            volume=df['volume']
+        )
+
+    def to_df(self):
+        return pd.DataFrame({
+            'time': self.time,
+            'high': self.high,
+            'low': self.low,
+            'open': self.open,
+            'close': self.close,
+            'volume': self.volume
+        })
 
     @staticmethod
     def from_csv(file_path: str):
         df = pd.read_csv(file_path)
-        df['snapped_at'] = pd.to_datetime(df['snapped_at'])
+        df['time'] = pd.to_datetime(df['time'])
 
-        return DataSeries(
-            time=df['snapped_at'],
-            price=df['price'],
-            market_cap=df['market_cap'],
-            total_volume=df['total_volume']
-        )
+        return DataSeries.from_df(df)
+
+    def to_csv(self, file_path: str):
+        self.to_df().to_csv(file_path, index=False)
 
     def __len__(self):
         return len(self.time)
@@ -40,45 +71,41 @@ class DataSeries:
             stop = key.stop % len(self) if key.stop is not None else None
             key = slice(start, stop, key.step)
 
-            time = self.time[key].reset_index(drop=True)
-            price = self.price[key].reset_index(drop=True)
-            market_cap = self.market_cap[key].reset_index(drop=True)
-            total_volume = self.total_volume[key].reset_index(drop=True)
-
             return DataSeries(
-                time=time,
-                price=price,
-                market_cap=market_cap,
-                total_volume=total_volume
+                time=self.time[key].reset_index(drop=True),
+                high=self.high[key].reset_index(drop=True),
+                low=self.low[key].reset_index(drop=True),
+                open=self.open[key].reset_index(drop=True),
+                close=self.close[key].reset_index(drop=True),
+                volume=self.volume[key].reset_index(drop=True)
             )
         elif isinstance(key, int):
             index = key % len(self)
             return Entry(
                 time=self.time[index],
-                price=self.price[index],
-                market_cap=self.market_cap[index],
-                total_volume=self.total_volume[index]
+                high=self.high[index],
+                low=self.low[index],
+                open=self.open[index],
+                close=self.close[index],
+                volume=self.volume[index]
             )
 
     def __iter__(self):
         return iter([Entry(
             time=self.time[i],
-            price=self.price[i],
-            market_cap=self.market_cap[i],
-            total_volume=self.total_volume[i]
+            high=self.high[i],
+            low=self.low[i],
+            open=self.open[i],
+            close=self.close[i],
+            volume=self.volume[i]
         ) for i in range(len(self))])
 
     def __repr__(self):
-        return pd.DataFrame({
-            'time': self.time,
-            'price': self.price,
-            'market_cap': self.market_cap,
-            'total_volume': self.total_volume
-        }).__repr__()
+        return self.to_df().__repr__()
 
 
 if __name__ == '__main__':
-    data = DataSeries.from_csv('resources/eth-usd-max.csv')
+    data = DataSeries.from_csv('resources/eth-usd-hourly.csv')
     print(data)
 
     print('first value:')

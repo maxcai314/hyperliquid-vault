@@ -1,4 +1,4 @@
-from data import Entry, DataSeries
+from data import DataSeries
 from dataclasses import dataclass
 from scipy import stats, odr
 
@@ -8,9 +8,9 @@ class ConstantSignal:
 
     def predict_price(self, price_history: DataSeries) -> bool:
         """
-        Predicts whether tomorrow's price will be higher than today's, given one week of historical data.
-        :param price_history: the historical price data over one week (collected daily)
-        :return: whether tomorrow's price will be higher than today's
+        Predicts whether the next hour's price will be higher than today's, given recent historical data.
+        :param price_history: the historical price data (collected hourly)
+        :return: whether the next price will be higher than today's
         """
         return self.result
 
@@ -24,7 +24,7 @@ class PointSignal:
 
     def predict_price(self, price_history: DataSeries) -> bool:
         """
-        Predicts by comparing the price time_step days ago to the current price.
+        Predicts by comparing the price time_step measurements ago to the current price.
         """
         return price_history[-1].price > price_history[-1 - self.time_step].price
 
@@ -33,13 +33,13 @@ YESTERDAYS_NEWS = PointSignal(time_step=1)
 
 @dataclass
 class LinearSignal:
-    days_to_consider: int
+    measurements_to_consider: int
 
     def predict_price(self, price_history: DataSeries) -> bool:
         """
-        Predicts by fitting a linear regression to the price data and extrapolating the next day's price.
+        Predicts by fitting a linear regression to the price data and extrapolating the next price.
         """
-        x = range(-1 - self.days_to_consider, 0)
+        x = range(-1 - self.measurements_to_consider, 0)
         y = [price_history[i].price for i in x]
 
         slope, intercept, r_value, p_value, std_err = stats.linregress(x, y)
@@ -48,13 +48,13 @@ class LinearSignal:
 
 @dataclass
 class QuadraticSignal:
-    days_to_consider: int
+    measurements_to_consider: int
 
     def predict_price(self, price_history: DataSeries) -> bool:
         """
-        Predicts by fitting a quadratic regression to the price data and extrapolating the next day's price.
+        Predicts by fitting a quadratic regression to the price data and extrapolating the next price.
         """
-        x = range(-1 - self.days_to_consider, 0)
+        x = range(-1 - self.measurements_to_consider, 0)
         y = [price_history[i].price for i in x]
 
         data = odr.Data(x, y)
